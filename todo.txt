@@ -1,0 +1,6 @@
+1. hashtable
+    a. set()
+    b. get()
+    c. clear()
+
+2. train tokenization

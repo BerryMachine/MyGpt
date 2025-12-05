@@ -1,1 +1,22 @@
 124M GPT2 Replica in C, hopefully.
+
+# To build
+make all
+
+# To run
+./build/test
+
+# To clean up
+make clean
+(Since `all` is the default target, you can just type `make`).
+
+### How It Works
+
+1.  `UNAME_S := $(shell uname -s)`: This command runs `uname -s`.
+2.  `ifeq ($(UNAME_S), Darwin)`: The `Makefile` checks if the result was "Darwin" (which means macOS).
+3.  **If it's "Darwin":** It sets `CC := clang` and adds all the `brew` paths for `libomp`.
+4.  **If it's *not* "Darwin" (e.g., "Linux"):** It falls into the `else` block and sets `CC := gcc`, using the simple flags for the Docker/Linux environment.
+
+All the other flags (`-fopenmp`, `-march=native`, etc.) are common to both, so they are defined *after* the detection block.
+
+This single file now handles both of your build environments perfectly!

@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <omp.h>
 #include "maths.h"
+#include "tokenizer.h"
 
-// Helper function to print a matrix
 void print_matrix(const float* M, int rows, int cols, const char* name) {
     printf("%s ( %d x %d ):\n", name, rows, cols);
     for (int i = 0; i < rows; i++) {
@@ -17,18 +18,18 @@ void print_matrix(const float* M, int rows, int cols, const char* name) {
     }
 }
 
-int main() {
+int testmat() {
     // Define matrix dimensions:
-    // A(N, K) @ B(K, M) -> C(N, M)
+    // A(N, M) @ B(M, K) -> C(N, K)
     // All dimensions are even, as requested.
-    int N = 64; // A rows, C rows
-    int K = 64; // A cols, B rows
-    int M = 64; // B cols, C cols
+    int N = 1024; // A rows, C rows
+    int M = 1024; // A cols, B rows
+    int K = 1024; // B cols, C cols
 
     // Allocate memory on the heap
-    float* A = (float*)malloc(N * K * sizeof(float));
-    float* B = (float*)malloc(K * M * sizeof(float));
-    float* C = (float*)malloc(N * M * sizeof(float));
+    float* A = (float*)malloc(N * M * sizeof(float));
+    float* B = (float*)malloc(M * K * sizeof(float));
+    float* C = (float*)malloc(N * K * sizeof(float));
 
     // Check if malloc failed
     if (A == NULL || B == NULL || C == NULL) {
@@ -38,26 +39,27 @@ int main() {
 
         // Fill A with row = i+1 (so row 0 has 1s, row 1 has 2s, ...)
     for (int i = 0; i < N; i++) {
-        for (int j = 0; j < K; j++) {
-            A[i*K + j] = (float)(i + 1);
+        for (int j = 0; j < M; j++) {
+            A[i*M + j] = (float)(i + 1);
         }
     }
 
     // Fill B with col = j+1 (so column 0 has 1s, column 1 has 2s, ...)
-    for (int i = 0; i < K; i++) {
-        for (int j = 0; j < M; j++) {
-            B[i*M + j] = (float)(j + 1);
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < K; j++) {
+            B[i*K + j] = (float)(j + 1);
         }
     }
 
-    // --- Run the function to test ---
-    matmul_cpu(A, B, C, N, M, K);
-    // --------------------------------
+    double start_time, end_time, elapsed_time;
+    start_time = omp_get_wtime();
 
-    // Print the inputs and the final result
-    print_matrix(A, N, K, "Matrix A");
-    print_matrix(B, K, M, "Matrix B");
-    print_matrix(C, N, M, "Result C (A @ B)");
+    matmul_cpu(A, B, C, N, M, K);
+
+    end_time = omp_get_wtime();
+    elapsed_time = end_time - start_time;
+
+    printf("\nExecution Time: %f seconds\n", elapsed_time);
 
     // Clean up memory
     free(A);
@@ -65,4 +67,9 @@ int main() {
     free(C);
 
     return 0;
+}
+
+int main() {
+    // testmat();
+    tokenize();
 }
